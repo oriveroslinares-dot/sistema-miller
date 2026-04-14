@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}Ajuste de Inventario – Miller{% endblock %}
+{% block page_title %}Ajuste de Inventario{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-warning text-dark fw-semibold">
+        <i class="bi bi-sliders me-2"></i>Registrar Ajuste
+      </div>
+      <div class="card-body p-4">
+        <form method="POST">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label fw-semibold">Producto <span class="text-danger">*</span></label>
+              <select name="producto_id" class="form-select" required id="sel-prod" onchange="mostrarInfo()">
+                <option value="">Seleccione un producto...</option>
+                {% for p in productos %}
+                  <option value="{{ p.id }}"
+                    data-stock="{{ p.inventario_actual.stock if p.inventario_actual else 0 }}"
+                    data-prom="{{ p.inventario_actual.costo_promedio if p.inventario_actual else 0 }}">
+                    [{{ p.codigo }}] {{ p.nombre }} — {{ p.categoria.nombre }}
+                  </option>
+                {% endfor %}
+              </select>
+              <div id="info-prod" class="mt-2 d-none">
+                <span class="badge bg-light text-dark border">
+                  Stock actual: <strong id="stock-act">0</strong>
+                  &nbsp;|&nbsp; Costo prom.: $<strong id="costo-act">0</strong>
+                </span>
+              </div>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold">Tipo de ajuste <span class="text-danger">*</span></label>
+              <select name="tipo_ajuste" class="form-select" required id="tipo-ajuste" onchange="toggleCosto()">
+                <option value="MAS">+ Aumento de stock</option>
+                <option value="MENOS">− Disminución de stock</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold">Empresa <span class="text-danger">*</span></label>
+              <select name="empresa_id" class="form-select" required>
+                {% for e in empresas %}
+                  <option value="{{ e.id }}">{{ e.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold">Fecha</label>
+              <input type="date" name="fecha" class="form-control" id="fecha-inp">
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold">Cantidad <span class="text-danger">*</span></label>
+              <input type="number" name="cantidad" class="form-control" min="0.01" step="0.01" required>
+            </div>
+            <div class="col-6" id="div-costo">
+              <label class="form-label fw-semibold">Costo unitario</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" name="costo_unitario" class="form-control" min="0" step="0.01" value="0">
+              </div>
+              <small class="text-muted">Solo aplica para ajustes de aumento.</small>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold">N° Documento</label>
+              <input type="text" name="documento" class="form-control" placeholder="Acta de ajuste...">
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Concepto / Motivo</label>
+              <input type="text" name="concepto" class="form-control" value="Ajuste de inventario">
+            </div>
+          </div>
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-warning">
+              <i class="bi bi-check-lg me-1"></i>Registrar Ajuste
+            </button>
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById('fecha-inp').value = new Date().toISOString().slice(0,10);
+  function mostrarInfo() {
+    const sel = document.getElementById('sel-prod');
+    const opt = sel.options[sel.selectedIndex];
+    if (!opt.value) { document.getElementById('info-prod').classList.add('d-none'); return; }
+    document.getElementById('stock-act').textContent = opt.dataset.stock;
+    document.getElementById('costo-act').textContent = parseFloat(opt.dataset.prom).toLocaleString('es-CO');
+    document.getElementById('info-prod').classList.remove('d-none');
+  }
+  function toggleCosto() {
+    const tipo = document.getElementById('tipo-ajuste').value;
+    document.getElementById('div-costo').style.opacity = tipo === 'MAS' ? '1' : '0.4';
+  }
+</script>
+{% endblock %}

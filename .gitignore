@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+instance/
+miller.db
+.env
+*.egg-info/
+dist/
+build/
+.venv/
+venv/

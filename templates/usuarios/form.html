@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}{{ accion }} Usuario – Miller{% endblock %}
+{% block page_title %}{{ accion }} Usuario{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <form method="POST">
+          {% if accion == 'Nuevo' %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Usuario <span class="text-danger">*</span></label>
+            <input type="text" name="username" class="form-control" required
+                   pattern="[a-zA-Z0-9_]+" title="Solo letras, números y guión bajo">
+          </div>
+          {% endif %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nombre completo <span class="text-danger">*</span></label>
+            <input type="text" name="nombre" class="form-control" required
+                   value="{{ usuario.nombre if usuario else '' }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">
+              Contraseña
+              {% if accion == 'Editar' %}<span class="text-muted small">(dejar vacío para no cambiar)</span>{% endif %}
+            </label>
+            <input type="password" name="password" class="form-control"
+                   {% if accion == 'Nuevo' %}required{% endif %} minlength="6">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Rol <span class="text-danger">*</span></label>
+            <select name="rol" class="form-select" required>
+              {% for r in [('admin','Administrador'), ('bodeguero','Bodeguero'), ('vendedor','Vendedor')] %}
+                <option value="{{ r[0] }}"
+                  {% if usuario and usuario.rol == r[0] %}selected{% endif %}>
+                  {{ r[1] }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          {% if accion == 'Editar' %}
+          <div class="mb-4 form-check">
+            <input type="checkbox" class="form-check-input" name="activo" id="activo"
+                   {% if usuario.activo %}checked{% endif %}>
+            <label class="form-check-label" for="activo">Usuario activo</label>
+          </div>
+          {% endif %}
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-check-lg me-1"></i>Guardar
+            </button>
+            <a href="{{ url_for('usuarios.lista') }}" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

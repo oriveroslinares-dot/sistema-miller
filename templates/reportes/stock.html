@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}Reporte de Stock – Miller{% endblock %}
+{% block page_title %}Reporte de Stock Actual{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-body py-2 px-4">
+    <form class="d-flex flex-wrap gap-2 align-items-end" method="GET">
+      <div>
+        <label class="form-label mb-1 small fw-semibold">Categoría</label>
+        <select name="categoria" class="form-select form-select-sm" style="width:200px">
+          <option value="">Todas</option>
+          {% for c in categorias %}
+            <option value="{{ c.id }}" {% if categoria_sel == c.id %}selected{% endif %}>{{ c.nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="form-label mb-1 small fw-semibold">Filtro</label>
+        <select name="alertas" class="form-select form-select-sm">
+          <option value="">Todos los productos</option>
+          <option value="1" {% if alertas %}selected{% endif %}>Solo alertas de stock</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">
+        <i class="bi bi-search me-1"></i>Filtrar
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center bg-light">
+    <span class="fw-semibold">{{ items|length }} productos &nbsp;|&nbsp; Valor total: <strong class="text-success">${{ "{:,.0f}".format(total_valor) }}</strong></span>
+    <button onclick="window.print()" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-printer me-1"></i>Imprimir
+    </button>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-dark">
+        <tr>
+          <th>Código</th><th>Producto</th><th>Categoría</th><th>Unidad</th>
+          <th class="text-end">Stock</th><th class="text-end">Stock Mín.</th>
+          <th class="text-end">Costo Prom.</th><th class="text-end">Valor Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for i in items %}
+        <tr {% if i.stock <= i.producto.stock_minimo and i.producto.stock_minimo > 0 %}class="table-warning"{% endif %}>
+          <td>
+            <a href="{{ url_for('inventario.kardex', pid=i.producto_id) }}" class="text-decoration-none">
+              <code>{{ i.producto.codigo }}</code>
+            </a>
+          </td>
+          <td>{{ i.producto.nombre }}</td>
+          <td>
+            <span class="badge
+              {% if i.producto.categoria.nombre == 'Electrodomésticos' %}bg-primary
+              {% elif i.producto.categoria.nombre == 'Muebles' %}bg-success
+              {% else %}bg-secondary{% endif %}">
+              {{ i.producto.categoria.nombre }}
+            </span>
+          </td>
+          <td>{{ i.producto.unidad }}</td>
+          <td class="text-end fw-semibold
+            {% if i.stock <= i.producto.stock_minimo and i.producto.stock_minimo > 0 %}text-danger{% endif %}">
+            {{ i.stock }}
+          </td>
+          <td class="text-end">{{ i.producto.stock_minimo }}</td>
+          <td class="text-end">${{ "{:,.2f}".format(i.costo_promedio) }}</td>
+          <td class="text-end">${{ "{:,.0f}".format(i.valor_total) }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-center text-muted py-4">Sin datos.</td></tr>
+        {% endfor %}
+      </tbody>
+      <tfoot class="table-secondary fw-bold">
+        <tr>
+          <td colspan="7" class="text-end">TOTAL</td>
+          <td class="text-end">${{ "{:,.0f}".format(total_valor) }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+{% endblock %}

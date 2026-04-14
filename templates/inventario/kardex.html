@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Kardex {{ producto.codigo }} – Miller{% endblock %}
+{% block page_title %}Kardex — {{ producto.codigo }}{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+  <div class="col-md-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body py-3 px-4">
+        <div class="row">
+          <div class="col-6">
+            <div class="text-muted small">Producto</div>
+            <strong>{{ producto.nombre }}</strong>
+          </div>
+          <div class="col-3">
+            <div class="text-muted small">Categoría</div>
+            <strong>{{ producto.categoria.nombre }}</strong>
+          </div>
+          <div class="col-3">
+            <div class="text-muted small">Stock actual</div>
+            <strong class="{% if inv and inv.stock <= producto.stock_minimo and producto.stock_minimo > 0 %}text-danger{% else %}text-success{% endif %}">
+              {{ inv.stock if inv else 0 }} {{ producto.unidad }}
+            </strong>
+          </div>
+        </div>
+        <div class="row mt-2">
+          <div class="col-4">
+            <div class="text-muted small">Costo promedio</div>
+            <strong>${{ "{:,.2f}".format(inv.costo_promedio if inv else 0) }}</strong>
+          </div>
+          <div class="col-4">
+            <div class="text-muted small">Valor total</div>
+            <strong>${{ "{:,.0f}".format(inv.valor_total if inv else 0) }}</strong>
+          </div>
+          <div class="col-4">
+            <div class="text-muted small">Stock mínimo</div>
+            <strong>{{ producto.stock_minimo }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 d-flex align-items-center gap-2">
+    <a href="{{ url_for('inventario.entrada') }}" class="btn btn-success btn-sm">
+      <i class="bi bi-box-arrow-in-down me-1"></i>Entrada
+    </a>
+    <a href="{{ url_for('inventario.salida') }}" class="btn btn-danger btn-sm">
+      <i class="bi bi-box-arrow-up me-1"></i>Salida
+    </a>
+    <a href="{{ url_for('inventario.ajuste') }}" class="btn btn-warning btn-sm">
+      <i class="bi bi-sliders me-1"></i>Ajuste
+    </a>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header fw-semibold bg-light">Movimientos</div>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover mb-0" style="font-size:.88rem;">
+      <thead class="table-dark">
+        <tr>
+          <th>Fecha</th><th>Tipo</th><th>Doc.</th><th>Concepto</th><th>Empresa</th>
+          <th class="text-end">Cantidad</th><th class="text-end">Costo Unit.</th>
+          <th class="text-end">Total</th><th class="text-end">Saldo Cant.</th>
+          <th class="text-end">Costo Prom.</th><th class="text-end">Saldo Valor</th>
+          <th>Usuario</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in movimientos %}
+        <tr>
+          <td>{{ m.fecha.strftime('%d/%m/%Y') }}</td>
+          <td>
+            <span class="badge badge-tipo-{{ m.tipo }}">
+              {{ m.tipo.replace('_', ' ') }}
+            </span>
+          </td>
+          <td>{{ m.documento or '—' }}</td>
+          <td>{{ m.concepto or '—' }}</td>
+          <td>{{ m.empresa.nombre if m.empresa else '—' }}</td>
+          <td class="text-end">{{ m.cantidad }}</td>
+          <td class="text-end">${{ "{:,.2f}".format(m.costo_unitario) }}</td>
+          <td class="text-end">${{ "{:,.0f}".format(m.costo_total or 0) }}</td>
+          <td class="text-end fw-semibold">{{ m.saldo_cantidad }}</td>
+          <td class="text-end">${{ "{:,.2f}".format(m.costo_promedio or 0) }}</td>
+          <td class="text-end">${{ "{:,.0f}".format(m.saldo_valor or 0) }}</td>
+          <td>{{ m.usuario.nombre if m.usuario else '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="12" class="text-center text-muted py-4">Sin movimientos registrados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="mt-3">
+  <a href="{{ url_for('productos.lista') }}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i>Volver a productos
+  </a>
+</div>
+{% endblock %}

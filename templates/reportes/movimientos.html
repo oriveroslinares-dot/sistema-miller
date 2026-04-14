@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Movimientos – Miller{% endblock %}
+{% block page_title %}Reporte de Movimientos{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-body py-2 px-4">
+    <form class="d-flex flex-wrap gap-2 align-items-end" method="GET">
+      <div>
+        <label class="form-label mb-1 small fw-semibold">Desde</label>
+        <input type="date" name="desde" class="form-control form-control-sm" value="{{ desde }}">
+      </div>
+      <div>
+        <label class="form-label mb-1 small fw-semibold">Hasta</label>
+        <input type="date" name="hasta" class="form-control form-control-sm" value="{{ hasta }}">
+      </div>
+      <div>
+        <label class="form-label mb-1 small fw-semibold">Tipo</label>
+        <select name="tipo" class="form-select form-select-sm" style="width:160px">
+          <option value="">Todos</option>
+          {% for t in ['ENTRADA','SALIDA','AJUSTE_MAS','AJUSTE_MENOS'] %}
+            <option value="{{ t }}" {% if tipo_sel == t %}selected{% endif %}>{{ t.replace('_',' ') }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="form-label mb-1 small fw-semibold">Categoría</label>
+        <select name="categoria" class="form-select form-select-sm" style="width:160px">
+          <option value="">Todas</option>
+          {% for c in categorias %}
+            <option value="{{ c.id }}" {% if categoria_sel == c.id %}selected{% endif %}>{{ c.nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">
+        <i class="bi bi-search me-1"></i>Filtrar
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header d-flex justify-content-between bg-light">
+    <span class="fw-semibold">{{ movimientos|length }} movimientos</span>
+    <button onclick="window.print()" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-printer me-1"></i>Imprimir
+    </button>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover mb-0" style="font-size:.88rem;">
+      <thead class="table-dark">
+        <tr>
+          <th>Fecha</th><th>Tipo</th><th>Código</th><th>Producto</th><th>Empresa</th>
+          <th>Doc.</th><th>Concepto</th>
+          <th class="text-end">Cant.</th><th class="text-end">Costo Unit.</th>
+          <th class="text-end">Total</th><th class="text-end">Saldo Cant.</th>
+          <th class="text-end">C. Prom.</th><th>Usuario</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in movimientos %}
+        <tr>
+          <td>{{ m.fecha.strftime('%d/%m/%Y') }}</td>
+          <td><span class="badge badge-tipo-{{ m.tipo }}">{{ m.tipo.replace('_',' ') }}</span></td>
+          <td><code>{{ m.producto.codigo }}</code></td>
+          <td>{{ m.producto.nombre }}</td>
+          <td>{{ m.empresa.nombre if m.empresa else '—' }}</td>
+          <td>{{ m.documento or '—' }}</td>
+          <td>{{ m.concepto or '—' }}</td>
+          <td class="text-end">{{ m.cantidad }}</td>
+          <td class="text-end">${{ "{:,.2f}".format(m.costo_unitario) }}</td>
+          <td class="text-end">${{ "{:,.0f}".format(m.costo_total or 0) }}</td>
+          <td class="text-end fw-semibold">{{ m.saldo_cantidad }}</td>
+          <td class="text-end">${{ "{:,.2f}".format(m.costo_promedio or 0) }}</td>
+          <td>{{ m.usuario.nombre if m.usuario else '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="13" class="text-center text-muted py-4">Sin movimientos para los filtros seleccionados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
