@@ -56,6 +56,8 @@ def nuevo():
             categoria_id=categoria_id,
             unidad=request.form.get('unidad', 'UND'),
             stock_minimo=float(request.form.get('stock_minimo', 0) or 0),
+            proveedor=request.form.get('proveedor', '').strip() or None,
+            precio_venta=float(request.form.get('precio_venta', 0) or 0),
         )
         db.session.add(p)
         db.session.flush()
@@ -81,6 +83,8 @@ def editar(pid):
         p.categoria_id = request.form.get('categoria_id', type=int)
         p.unidad = request.form.get('unidad', 'UND')
         p.stock_minimo = float(request.form.get('stock_minimo', 0) or 0)
+        p.proveedor = request.form.get('proveedor', '').strip() or None
+        p.precio_venta = float(request.form.get('precio_venta', 0) or 0)
         db.session.commit()
         flash('Producto actualizado.', 'success')
         return redirect(url_for('productos.lista'))

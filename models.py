@@ -53,6 +53,8 @@ class Producto(db.Model):
     categoria_id = db.Column(db.Integer, db.ForeignKey('categorias.id'), nullable=False)
     unidad = db.Column(db.String(20), default='UND')
     stock_minimo = db.Column(db.Float, default=0)
+    proveedor = db.Column(db.String(100))          # nombre del proveedor
+    precio_venta = db.Column(db.Float, default=0)  # precio de referencia (no afecta costo)
     activo = db.Column(db.Boolean, default=True)
 
     categoria = db.relationship('Categoria', backref='productos')
@@ -73,6 +75,7 @@ class Kardex(db.Model):
     cantidad = db.Column(db.Float, nullable=False)
     costo_unitario = db.Column(db.Float, nullable=False)
     costo_total = db.Column(db.Float)
+    precio_venta = db.Column(db.Float)             # solo en SALIDA, referencia
     saldo_cantidad = db.Column(db.Float)
     costo_promedio = db.Column(db.Float)
     saldo_valor = db.Column(db.Float)

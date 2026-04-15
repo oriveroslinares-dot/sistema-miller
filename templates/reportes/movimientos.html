@@ -42,18 +42,25 @@
 <div class="card border-0 shadow-sm">
   <div class="card-header d-flex justify-content-between bg-light">
     <span class="fw-semibold">{{ movimientos|length }} movimientos</span>
-    <button onclick="window.print()" class="btn btn-sm btn-outline-secondary">
-      <i class="bi bi-printer me-1"></i>Imprimir
-    </button>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('reportes.exportar_movimientos', desde=desde, hasta=hasta, tipo=tipo_sel) }}"
+         class="btn btn-sm btn-success">
+        <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
+      </a>
+      <button onclick="window.print()" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-printer me-1"></i>Imprimir
+      </button>
+    </div>
   </div>
   <div class="table-responsive">
-    <table class="table table-sm table-hover mb-0" style="font-size:.88rem;">
+    <table class="table table-sm table-hover mb-0" style="font-size:.85rem;">
       <thead class="table-dark">
         <tr>
-          <th>Fecha</th><th>Tipo</th><th>Código</th><th>Producto</th><th>Empresa</th>
+          <th>Fecha</th><th>Tipo</th><th>Código</th><th>Producto</th><th>Proveedor</th><th>Empresa</th>
           <th>Doc.</th><th>Concepto</th>
           <th class="text-end">Cant.</th><th class="text-end">Costo Unit.</th>
-          <th class="text-end">Total</th><th class="text-end">Saldo Cant.</th>
+          <th class="text-end">Total Costo</th><th class="text-end">P. Venta</th>
+          <th class="text-end">Saldo Cant.</th>
           <th class="text-end">C. Prom.</th><th>Usuario</th>
         </tr>
       </thead>
@@ -64,18 +71,22 @@
           <td><span class="badge badge-tipo-{{ m.tipo }}">{{ m.tipo.replace('_',' ') }}</span></td>
           <td><code>{{ m.producto.codigo }}</code></td>
           <td>{{ m.producto.nombre }}</td>
+          <td class="text-muted small">{{ m.producto.proveedor or '—' }}</td>
           <td>{{ m.empresa.nombre if m.empresa else '—' }}</td>
           <td>{{ m.documento or '—' }}</td>
           <td>{{ m.concepto or '—' }}</td>
           <td class="text-end">{{ m.cantidad }}</td>
           <td class="text-end">${{ "{:,.2f}".format(m.costo_unitario) }}</td>
           <td class="text-end">${{ "{:,.0f}".format(m.costo_total or 0) }}</td>
+          <td class="text-end text-primary fw-semibold">
+            {% if m.precio_venta %} ${{ "{:,.2f}".format(m.precio_venta) }}{% else %}—{% endif %}
+          </td>
           <td class="text-end fw-semibold">{{ m.saldo_cantidad }}</td>
           <td class="text-end">${{ "{:,.2f}".format(m.costo_promedio or 0) }}</td>
           <td>{{ m.usuario.nombre if m.usuario else '—' }}</td>
         </tr>
         {% else %}
-        <tr><td colspan="13" class="text-center text-muted py-4">Sin movimientos para los filtros seleccionados.</td></tr>
+        <tr><td colspan="15" class="text-center text-muted py-4">Sin movimientos para los filtros seleccionados.</td></tr>
         {% endfor %}
       </tbody>
     </table>

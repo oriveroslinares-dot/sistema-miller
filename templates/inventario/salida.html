@@ -19,7 +19,8 @@
                 {% for p in productos %}
                   <option value="{{ p.id }}"
                     data-stock="{{ p.inventario_actual.stock if p.inventario_actual else 0 }}"
-                    data-prom="{{ p.inventario_actual.costo_promedio if p.inventario_actual else 0 }}">
+                    data-prom="{{ p.inventario_actual.costo_promedio if p.inventario_actual else 0 }}"
+                    data-pventa="{{ p.precio_venta or 0 }}">
                     [{{ p.codigo }}] {{ p.nombre }} — {{ p.categoria.nombre }}
                   </option>
                 {% endfor %}
@@ -45,13 +46,32 @@
             </div>
             <div class="col-6">
               <label class="form-label fw-semibold">Cantidad <span class="text-danger">*</span></label>
-              <input type="number" name="cantidad" class="form-control" min="0.01" step="0.01" required>
+              <input type="number" name="cantidad" class="form-control" min="0.01" step="0.01"
+                     required oninput="calcMargen()">
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold">
+                Precio de venta
+                <span class="text-muted small">(referencia, no afecta costo)</span>
+              </label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" name="precio_venta" class="form-control" min="0" step="0.01"
+                       id="inp-pventa" oninput="calcMargen()">
+              </div>
+            </div>
+            <div class="col-12" id="info-margen" style="display:none">
+              <div class="alert alert-secondary py-2 mb-0 d-flex gap-3 flex-wrap">
+                <span>Costo total: <strong id="lbl-costo">$0</strong></span>
+                <span>Venta total: <strong id="lbl-venta">$0</strong></span>
+                <span>Margen: <strong id="lbl-margen" class="text-success">$0</strong></span>
+              </div>
             </div>
             <div class="col-6">
               <label class="form-label fw-semibold">N° Documento</label>
               <input type="text" name="documento" class="form-control" placeholder="Factura de venta...">
             </div>
-            <div class="col-12">
+            <div class="col-6">
               <label class="form-label fw-semibold">Concepto</label>
               <input type="text" name="concepto" class="form-control" value="Salida por venta">
             </div>
@@ -72,13 +92,35 @@
 {% block scripts %}
 <script>
   document.getElementById('fecha-inp').value = new Date().toISOString().slice(0,10);
+
+  let costoPromActual = 0;
+
   function mostrarInfo() {
     const sel = document.getElementById('sel-prod');
     const opt = sel.options[sel.selectedIndex];
     if (!opt.value) { document.getElementById('info-prod').classList.add('d-none'); return; }
+    costoPromActual = parseFloat(opt.dataset.prom) || 0;
     document.getElementById('stock-act').textContent = opt.dataset.stock;
-    document.getElementById('costo-act').textContent = parseFloat(opt.dataset.prom).toLocaleString('es-CO');
+    document.getElementById('costo-act').textContent = costoPromActual.toLocaleString('es-CO');
     document.getElementById('info-prod').classList.remove('d-none');
+    // pre-llenar precio de venta con el del producto
+    const pventa = parseFloat(opt.dataset.pventa) || 0;
+    if (pventa > 0) document.getElementById('inp-pventa').value = pventa;
+    calcMargen();
+  }
+
+  function calcMargen() {
+    const qty = parseFloat(document.querySelector('[name=cantidad]').value) || 0;
+    const pventa = parseFloat(document.getElementById('inp-pventa').value) || 0;
+    const costoTotal = qty * costoPromActual;
+    const ventaTotal = qty * pventa;
+    const margen = ventaTotal - costoTotal;
+
+    document.getElementById('lbl-costo').textContent = '$' + costoTotal.toLocaleString('es-CO', {minimumFractionDigits:2});
+    document.getElementById('lbl-venta').textContent = '$' + ventaTotal.toLocaleString('es-CO', {minimumFractionDigits:2});
+    document.getElementById('lbl-margen').textContent = '$' + margen.toLocaleString('es-CO', {minimumFractionDigits:2});
+    document.getElementById('lbl-margen').className = margen >= 0 ? 'text-success' : 'text-danger';
+    document.getElementById('info-margen').style.display = (qty > 0 || pventa > 0) ? 'block' : 'none';
   }
 </script>
 {% endblock %}
