@@ -47,6 +47,10 @@ def create_app():
                                alertas=alertas)
 
     app.register_blueprint(main_bp)
+
+    with app.app_context():
+        db.create_all()
+
     return app
 
 
