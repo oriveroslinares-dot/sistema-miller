@@ -8,7 +8,7 @@
     <div class="card border-0 shadow-sm">
       <div class="card-body py-3 px-4">
         <div class="row">
-          <div class="col-6">
+          <div class="col-5">
             <div class="text-muted small">Producto</div>
             <strong>{{ producto.nombre }}</strong>
           </div>
@@ -16,23 +16,31 @@
             <div class="text-muted small">Categoría</div>
             <strong>{{ producto.categoria.nombre }}</strong>
           </div>
-          <div class="col-3">
+          <div class="col-2">
             <div class="text-muted small">Stock actual</div>
             <strong class="{% if inv and inv.stock <= producto.stock_minimo and producto.stock_minimo > 0 %}text-danger{% else %}text-success{% endif %}">
               {{ inv.stock if inv else 0 }} {{ producto.unidad }}
             </strong>
           </div>
+          <div class="col-2">
+            <div class="text-muted small">Proveedor</div>
+            <strong>{{ producto.proveedor or '—' }}</strong>
+          </div>
         </div>
         <div class="row mt-2">
-          <div class="col-4">
+          <div class="col-3">
             <div class="text-muted small">Costo promedio</div>
             <strong>${{ "{:,.2f}".format(inv.costo_promedio if inv else 0) }}</strong>
           </div>
-          <div class="col-4">
+          <div class="col-3">
             <div class="text-muted small">Valor total</div>
             <strong>${{ "{:,.0f}".format(inv.valor_total if inv else 0) }}</strong>
           </div>
-          <div class="col-4">
+          <div class="col-3">
+            <div class="text-muted small">Precio venta ref.</div>
+            <strong class="text-primary">${{ "{:,.2f}".format(producto.precio_venta or 0) }}</strong>
+          </div>
+          <div class="col-3">
             <div class="text-muted small">Stock mínimo</div>
             <strong>{{ producto.stock_minimo }}</strong>
           </div>
@@ -40,7 +48,7 @@
       </div>
     </div>
   </div>
-  <div class="col-md-4 d-flex align-items-center gap-2">
+  <div class="col-md-4 d-flex align-items-center gap-2 flex-wrap">
     <a href="{{ url_for('inventario.entrada') }}" class="btn btn-success btn-sm">
       <i class="bi bi-box-arrow-in-down me-1"></i>Entrada
     </a>
@@ -56,12 +64,13 @@
 <div class="card border-0 shadow-sm">
   <div class="card-header fw-semibold bg-light">Movimientos</div>
   <div class="table-responsive">
-    <table class="table table-sm table-hover mb-0" style="font-size:.88rem;">
+    <table class="table table-sm table-hover mb-0" style="font-size:.85rem;">
       <thead class="table-dark">
         <tr>
           <th>Fecha</th><th>Tipo</th><th>Doc.</th><th>Concepto</th><th>Empresa</th>
           <th class="text-end">Cantidad</th><th class="text-end">Costo Unit.</th>
-          <th class="text-end">Total</th><th class="text-end">Saldo Cant.</th>
+          <th class="text-end">Total Costo</th><th class="text-end">P. Venta</th>
+          <th class="text-end">Saldo Cant.</th>
           <th class="text-end">Costo Prom.</th><th class="text-end">Saldo Valor</th>
           <th>Usuario</th>
         </tr>
@@ -81,13 +90,16 @@
           <td class="text-end">{{ m.cantidad }}</td>
           <td class="text-end">${{ "{:,.2f}".format(m.costo_unitario) }}</td>
           <td class="text-end">${{ "{:,.0f}".format(m.costo_total or 0) }}</td>
+          <td class="text-end text-primary">
+            {% if m.precio_venta %} ${{ "{:,.2f}".format(m.precio_venta) }}{% else %}—{% endif %}
+          </td>
           <td class="text-end fw-semibold">{{ m.saldo_cantidad }}</td>
           <td class="text-end">${{ "{:,.2f}".format(m.costo_promedio or 0) }}</td>
           <td class="text-end">${{ "{:,.0f}".format(m.saldo_valor or 0) }}</td>
           <td>{{ m.usuario.nombre if m.usuario else '—' }}</td>
         </tr>
         {% else %}
-        <tr><td colspan="12" class="text-center text-muted py-4">Sin movimientos registrados.</td></tr>
+        <tr><td colspan="13" class="text-center text-muted py-4">Sin movimientos registrados.</td></tr>
         {% endfor %}
       </tbody>
     </table>

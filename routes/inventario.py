@@ -18,12 +18,13 @@ def _actualizar_inventario(producto_id, tipo, cantidad, costo_unitario):
     if tipo in ('ENTRADA', 'AJUSTE_MAS'):
         nuevo_stock = stock_ant + cantidad
         if nuevo_stock > 0:
+            # Promedio ponderado solo de costos
             nuevo_promedio = (stock_ant * costo_ant + cantidad * costo_unitario) / nuevo_stock
         else:
             nuevo_promedio = costo_unitario
     else:  # SALIDA, AJUSTE_MENOS
         nuevo_stock = stock_ant - cantidad
-        nuevo_promedio = costo_ant
+        nuevo_promedio = costo_ant  # el precio de venta no afecta el costo promedio
 
     inv.stock = round(nuevo_stock, 4)
     inv.costo_promedio = round(nuevo_promedio, 4)
@@ -106,6 +107,7 @@ def salida():
         producto_id = request.form.get('producto_id', type=int)
         empresa_id = request.form.get('empresa_id', type=int)
         cantidad = float(request.form.get('cantidad', 0) or 0)
+        precio_venta = float(request.form.get('precio_venta', 0) or 0)
         documento = request.form.get('documento', '').strip()
         concepto = request.form.get('concepto', 'Salida de inventario').strip()
         fecha_str = request.form.get('fecha', '')
@@ -120,7 +122,7 @@ def salida():
         except ValueError:
             fecha = datetime.utcnow()
 
-        costo_unitario = inv.costo_promedio
+        costo_unitario = inv.costo_promedio  # costo al costo promedio ponderado
         saldo_cant, costo_prom, saldo_val = _actualizar_inventario(producto_id, 'SALIDA', cantidad, costo_unitario)
 
         k = Kardex(
@@ -133,6 +135,7 @@ def salida():
             cantidad=cantidad,
             costo_unitario=costo_unitario,
             costo_total=round(cantidad * costo_unitario, 2),
+            precio_venta=precio_venta if precio_venta > 0 else None,
             saldo_cantidad=saldo_cant,
             costo_promedio=costo_prom,
             saldo_valor=saldo_val,
